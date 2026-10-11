@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a2e;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .calculator-container {
+            padding: 20px;
+        }
+
+        .calculator {
+            background: #16213e;
+            border-radius: 20px;
+            padding: 24px;
+            width: 320px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid #0f3460;
+        }
+
+        h1 {
+            text-align: center;
+            color: #e94560;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        #display {
+            width: 100%;
+            background: #0f3460;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 18px;
+            font-size: 28px;
+            color: #ffffff;
+            text-align: right;
+            margin-bottom: 16px;
+            outline: none;
+            font-family: 'Segoe UI', monospace;
+            cursor: default;
+            min-height: 64px;
+        }
+
+        #display::placeholder {
+            color: #4a6fa5;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .btn {
+            background: #1a1a2e;
+            color: #ffffff;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 18px 0;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            background: #0f3460;
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            background: #e94560;
+            color: #fff;
+        }
+
+        /* Operator buttons: /, *, -, + */
+        .btn.operator {
+            background: #0f3460;
+            color: #e94560;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .btn.operator:hover {
+            background: #e94560;
+            color: #fff;
+        }
+
+        /* AC, (), % */
+        .btn.fn {
+            background: #1f2b47;
+            color: #7ec8e3;
+        }
+
+        .btn.fn:hover {
+            background: #7ec8e3;
+            color: #1a1a2e;
+        }
+
+        /* Equals */
+        .btn.equals {
+            background: #e94560;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .btn.equals:hover {
+            background: #ff6b80;
+        }
+
+        /* DEL button */
+        .btn.del {
+            background: #2a1a2e;
+            color: #ff9a9a;
+        }
+
+        .btn.del:hover {
+            background: #ff4444;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator">
+            <h1>Calculator</h1>
+            <input type="text" placeholder="0" id="display" disabled>
+            <div class="buttons">
+                <button class="btn fn"  onclick="clearAll()">AC</button>
+                <button class="btn fn"  onclick="addBracket()">()</button>
+                <button class="btn fn"  onclick="appendToDisplay('%')">%</button>
+                <button class="btn operator" onclick="appendToDisplay('/')">÷</button>
+
+                <button class="btn" onclick="appendToDisplay('7')">7</button>
+                <button class="btn" onclick="appendToDisplay('8')">8</button>
+                <button class="btn" onclick="appendToDisplay('9')">9</button>
+                <button class="btn operator" onclick="appendToDisplay('*')">×</button>
+
+                <button class="btn" onclick="appendToDisplay('4')">4</button>
+                <button class="btn" onclick="appendToDisplay('5')">5</button>
+                <button class="btn" onclick="appendToDisplay('6')">6</button>
+                <button class="btn operator" onclick="appendToDisplay('-')">−</button>
+
+                <button class="btn" onclick="appendToDisplay('1')">1</button>
+                <button class="btn" onclick="appendToDisplay('2')">2</button>
+                <button class="btn" onclick="appendToDisplay('3')">3</button>
+                <button class="btn operator" onclick="appendToDisplay('+')">+</button>
+
+                <button class="btn" onclick="appendToDisplay('0')">0</button>
+                <button class="btn" onclick="appendToDisplay('.')">.</button>
+                <button class="btn del" onclick="deleteLast()">DEL</button>
+                <button class="btn equals" onclick="calculate()">=</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+
+        function appendToDisplay(value) {
+            if (display.placeholder === '0') display.placeholder = '';
+            display.value += value;
+        }
+
+        function clearAll() {
+            display.value = '';
+            display.placeholder = '0';
+        }
+
+        function deleteLast() {
+            display.value = display.value.slice(0, -1);
+        }
+
+        function addBracket() {
+            const val = display.value;
+            const openCount = (val.match(/\(/g) || []).length;
+            const closeCount = (val.match(/\)/g) || []).length;
+            if (openCount > closeCount && val !== '') {
+                display.value += ')';
+            } else {
+                display.value += '(';
+            }
+        }
+
+        function calculate() {
+            try {
+                let expr = display.value;
+                if (!expr) return;
+                // Replace % with /100 for calculation
+                expr = expr.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
+                let result = Function('"use strict"; return (' + expr + ')')();
+                // Round floating point errors
+                result = Math.round(result * 1e10) / 1e10;
+                display.value = result;
+            } catch (e) {
+                display.value = '';
+                display.placeholder = 'Error';
+                setTimeout(() => { display.placeholder = '0'; }, 1500);
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if ('0123456789.+-*/()'.includes(e.key)) appendToDisplay(e.key);
+            else if (e.key === 'Enter' || e.key === '=') calculate();
+            else if (e.key === 'Backspace') deleteLast();
+            else if (e.key === 'Escape') clearAll();
+            else if (e.key === '%') appendToDisplay('%');
+        });
+    </script>
+</body>
+</html>
